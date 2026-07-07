@@ -136,10 +136,10 @@ export default function App() {
 
           {config && (
             <div className="flex items-center gap-2 text-[11px]">
-              <span className="px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20">
+              <span className="px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200">
                 {config.llm_model}
               </span>
-              <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+              <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">
                 {config.embedding_provider}
               </span>
             </div>
@@ -156,7 +156,7 @@ export default function App() {
             onSubmit={handleDiagnose}
           />
           {errorMsg && (
-            <div className="mt-3 px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs animate-fade-in">
+            <div className="mt-3 px-4 py-2.5 rounded-xl bg-red-50 border border-red-200 text-red-600 text-xs animate-fade-in">
               <span className="font-medium">错误：</span>{errorMsg}
             </div>
           )}
@@ -173,13 +173,13 @@ export default function App() {
                   执行进度
                 </span>
                 {isRunning && (
-                  <span className="text-[11px] text-indigo-400 flex items-center gap-1.5">
+                  <span className="text-[11px] text-indigo-500 flex items-center gap-1.5">
                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
                     运行中
                   </span>
                 )}
                 {!isRunning && logEntries.length > 0 && (
-                  <span className="text-[11px] text-emerald-400 flex items-center gap-1.5">
+                  <span className="text-[11px] text-emerald-500 flex items-center gap-1.5">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
@@ -204,7 +204,7 @@ export default function App() {
                 className={`
                   relative px-4 py-3 text-[13px] font-medium transition-colors
                   ${activeTab === 'log'
-                    ? 'text-indigo-300 tab-active'
+                    ? 'text-indigo-600 tab-active'
                     : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
                   }
                 `}
@@ -218,7 +218,7 @@ export default function App() {
                   </svg>
                   执行日志
                   {logEntries.length > 0 && (
-                    <span className="ml-1 px-1.5 py-0.5 rounded-full bg-[var(--border-subtle)] text-[10px] text-[var(--text-secondary)]">
+                    <span className="ml-1 px-1.5 py-0.5 rounded-full bg-slate-100 text-[10px] text-[var(--text-secondary)]">
                       {logEntries.length}
                     </span>
                   )}
@@ -229,7 +229,7 @@ export default function App() {
                 className={`
                   relative px-4 py-3 text-[13px] font-medium transition-colors
                   ${activeTab === 'report'
-                    ? 'text-indigo-300 tab-active'
+                    ? 'text-indigo-600 tab-active'
                     : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
                   }
                 `}
@@ -244,7 +244,7 @@ export default function App() {
             </div>
 
             {/* Tab 内容 */}
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
               {activeTab === 'log' ? (
                 <ExecutionLog entries={logEntries} />
               ) : (

@@ -49,13 +49,13 @@ export default function QuestionInput({
               className={`
                 group px-3 py-1.5 rounded-xl text-[11px] text-left transition-all
                 ${isRunning
-                  ? 'bg-white/[0.03] text-[var(--text-muted)] cursor-not-allowed'
+                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                   : 'glass-card glass-card-hover text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer'
                 }
               `}
               title={q}
             >
-              <span className="text-indigo-400 mr-1.5 font-bold">{i + 1}</span>
+              <span className="text-indigo-500 mr-1.5 font-bold">{i + 1}</span>
               {q.length > 24 ? q.slice(0, 24) + '...' : q}
             </button>
           ))}
@@ -92,7 +92,7 @@ export default function QuestionInput({
           className={`
             px-5 py-2.5 rounded-lg font-medium text-sm transition-all whitespace-nowrap
             ${isRunning || !input.trim()
-              ? 'bg-white/[0.04] text-[var(--text-muted)] cursor-not-allowed'
+              ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
               : 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white hover:shadow-lg hover:shadow-indigo-500/25 hover:brightness-110'
             }
           `}

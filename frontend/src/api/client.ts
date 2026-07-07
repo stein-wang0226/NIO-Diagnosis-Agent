@@ -3,6 +3,9 @@
  *
  * 核心功能：通过 fetch + ReadableStream 消费 POST /api/diagnose 的 SSE 流。
  * 标准 EventSource API 只支持 GET，所以需要手动解析 SSE 格式。
+ *
+ * 重要：sse-starlette 使用 \r\n 行结束符，事件分隔符为 \r\n\r\n，
+ * 需要先统一为 \n 再按 \n\n 分割。
  */
 
 import type {
@@ -28,10 +31,10 @@ export interface SSECallbacks {
 /**
  * 流式诊断 - POST /api/diagnose，消费 SSE 流
  *
- * SSE 格式：
- *   event: node_update\n
- *   data: {"node": "...", ...}\n
- *   \n
+ * SSE 格式（sse-starlette 使用 \r\n 行结束）：
+ *   event: node_update\r\n
+ *   data: {"node": "...", ...}\r\n
+ *   \r\n
  */
 export async function streamDiagnosis(
   question: string,
@@ -64,11 +67,15 @@ export async function streamDiagnosis(
 
       buffer += decoder.decode(value, { stream: true })
 
+      // 统一行结束符：\r\n → \n（sse-starlette 使用 \r\n）
+      const normalized = buffer.replace(/\r\n/g, '\n')
+
       // SSE 事件以双换行分隔
-      const events = buffer.split('\n\n')
+      const events = normalized.split('\n\n')
       buffer = events.pop() || ''
 
       for (const eventText of events) {
+        if (!eventText.trim()) continue
         const parsed = parseSSEEvent(eventText)
         if (!parsed) continue
 
@@ -76,6 +83,21 @@ export async function streamDiagnosis(
           callbacks.onNodeUpdate(parsed.data as NodeUpdateEvent)
         } else if (parsed.event === 'done') {
           callbacks.onDone(parsed.data as DoneEvent)
+        } else if (parsed.event === 'error') {
+          callbacks.onError((parsed.data as { error: string }).error)
+        }
+      }
+    }
+
+    // 处理缓冲区中可能残留的最后一个事件
+    if (buffer.trim()) {
+      const normalized = buffer.replace(/\r\n/g, '\n')
+      const parsed = parseSSEEvent(normalized)
+      if (parsed) {
+        if (parsed.event === 'done') {
+          callbacks.onDone(parsed.data as DoneEvent)
+        } else if (parsed.event === 'node_update') {
+          callbacks.onNodeUpdate(parsed.data as NodeUpdateEvent)
         } else if (parsed.event === 'error') {
           callbacks.onError((parsed.data as { error: string }).error)
         }
