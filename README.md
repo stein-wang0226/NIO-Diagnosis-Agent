@@ -20,7 +20,7 @@
 LangChain (LCEL)          -> RAG 组件层：文档加载、向量化、检索
 LangGraph (StateGraph)    -> Agent 编排层：四阶段流水线、条件路由、状态管理
 FastAPI + SSE             -> Web API 层：实时流式推送节点执行状态
-React + React Flow        -> 前端展示层：Agent 工作流可视化、诊断报告渲染
+React + Tailwind          -> 前端展示层：步骤条进度可视化、诊断报告渲染
 DeepSeek / 通义千问        -> LLM 推理层：问题改写、文档评分、答案生成
 FAISS                     -> 向量存储层：本地轻量级，无需额外服务
 ```
@@ -32,7 +32,7 @@ FAISS                     -> 向量存储层：本地轻量级，无需额外服
 | RAG 基础能力 | LangChain | 提供 Document Loaders、Embeddings、Vector Stores 等完整链路 |
 | 四阶段流水线 | LangGraph | 有条件分支和循环需求，LangGraph 的 StateGraph 天然支持 |
 | 国内模型适配 | LangChain 集成 | 通过 langchain-deepseek / langchain-tongyi 官方包支持 |
-| 面试展示 | LangGraph + React Flow | Agent 工作流可视化 + 实时状态高亮，直观展示决策过程 |
+| 面试展示 | LangGraph + React | Agent 步骤条进度可视化 + 实时状态高亮，直观展示决策过程 |
 | Web GUI | FastAPI + SSE + React | 浏览器可视化诊断，实时流式推送节点执行状态 |
 
 ## 快速开始
@@ -119,27 +119,54 @@ cd frontend && npm install && npm run build && cd ..
 #### 2. 启动 Web GUI
 
 ```bash
+# 在项目根目录执行（必须在 langchain-prod/ 下，不能在 frontend/ 下）
 python -m src.api.server
+
 # 浏览器打开 http://localhost:8000
 ```
 
-#### 3. 选择或输入故障问题
+#### 3. 停止服务
+
+```bash
+# 方法一：终端中直接 Ctrl+C
+
+# 方法二：按端口查找并终止
+lsof -ti:8000 | xargs kill -9
+
+# 方法三：按进程名查找并终止
+pkill -f "src.api.server"
+```
+
+#### 4. 查看服务状态
+
+```bash
+# 检查进程是否在运行
+ps aux | grep "src.api.server" | grep -v grep
+
+# 检查端口是否被占用
+lsof -i:8000
+
+# 健康检查
+curl http://localhost:8000/api/health
+```
+
+#### 5. 选择或输入故障问题
 
 Web GUI 界面包含：
-- **顶部**：6 个示例问题快捷按钮 + 自定义输入框
-- **左侧**：Agent 工作流可视化（React Flow），6 个节点实时高亮状态变化（idle → running → completed），条件边标注"相关/不相关/重试"
-- **右侧**：Tab 切换「执行日志」「诊断报告」
-  - 执行日志：每个节点完成后实时追加，显示数据量、评分结果、重试次数
+- **顶部**：6 个示例问题快捷按钮 + 自定义输入框 + 渐变启动按钮
+- **步骤条**：紧凑水平进度指示器，5 个步骤实时状态变化（灰色 idle → 蓝色脉冲 running → 绿色对勾 completed）
+- **内容区**：Tab 切换「执行日志」「诊断报告」
+  - 执行日志：每个节点完成后实时追加卡片，带 SVG 图标、数据量摘要、评分结果、重试次数
   - 诊断报告：Markdown 渲染 LLM 生成的诊断报告 + 执行摘要面板
 
-#### 4. 实时观察 Agent 决策过程
+#### 6. 实时观察 Agent 决策过程
 
 诊断过程中：
-- 左侧工作流图中节点依次亮起（蓝色脉冲 = running，绿色 = completed）
-- 右侧执行日志面板实时滚动每个节点的输出
-- 文档评分后自动切换到「诊断报告」Tab，展示 Markdown 格式的诊断报告
+- 步骤条中节点依次亮起（蓝色脉冲 = running，绿色对勾 = completed），连接线实时变色
+- 执行日志面板实时滚动每个节点的输出卡片（含 SVG 图标 + 数据摘要）
+- 原因分析完成后自动切换到「诊断报告」Tab，展示 Markdown 格式的诊断报告
 
-#### 5. 查看诊断报告
+#### 7. 查看诊断报告
 
 诊断完成后，「诊断报告」Tab 显示：
 - **执行摘要**：评分结果、重试次数、日志/检索/规则数据量
@@ -262,8 +289,8 @@ langchain-prod/
 │       ├── api/client.ts       # SSE 客户端（fetch + ReadableStream）
 │       ├── types/events.ts     # TypeScript 类型定义
 │       └── components/
-│           ├── WorkflowGraph.tsx    # Agent 工作流可视化（React Flow）
-│           ├── ExecutionLog.tsx     # 实时执行日志
+│           ├── StepIndicator.tsx    # 步骤条进度指示器（SVG 图标 + 连接线）
+│           ├── ExecutionLog.tsx     # 实时执行日志（SVG 图标 + 卡片样式）
 │           ├── DiagnosisReport.tsx  # Markdown 诊断报告
 │           └── QuestionInput.tsx    # 问题输入 + 示例按钮
 └── tests/
@@ -333,7 +360,7 @@ graph TB
 
 1. **技术选型深度**：展示 LangChain vs LangGraph 的选型思考，说明为什么四阶段流水线需要 LangGraph 的 StateGraph 而非 LangChain 的线性 chain
 2. **工程能力**：State 设计（TypedDict + Annotated）、条件路由（conditional_edges + route_after_grading）、重试机制（retry_count + MAX_RETRY_COUNT 限制）、LLM API 重试+降级（MAX_LLM_RETRIES=3，失败后降级输出原始数据）、每步耗时展示
-3. **Web GUI 全栈能力**：FastAPI + SSE 实时流式推送 + React + React Flow 工作流可视化，后端核心代码零改动，`graph.stream()` 替代 `graph.invoke()` 获取节点级状态更新
+3. **Web GUI 全栈能力**：FastAPI + SSE 实时流式推送 + React 步骤条进度可视化，后端核心代码零改动，`graph.stream()` 替代 `graph.invoke()` 获取节点级状态更新
 4. **业务理解**：Mock 数据覆盖 BMS/ADAS/ICM/VCU/底盘/转向/HVAC 七大域 24 个故障案例，含真实错误码、CAN 信号、堆栈信息
 5. **可扩展性**：说明如何从 Demo 扩展到生产（Mock 数据 -> 真实 API、FAISS -> Milvus、Memory -> Postgres、添加 LangSmith 追踪）
 
@@ -347,4 +374,4 @@ graph TB
 | LLM | DeepSeek / 通义千问 | 根据成本/延迟动态路由 |
 | 监控 | rich 终端输出 | LangSmith 追踪 + Prometheus 指标 |
 | 部署 | python -m src.main | FastAPI Web GUI + Docker + K8s |
-| 前端 | 无（终端输出） | React + React Flow 工作流可视化 |
+| 前端 | 无（终端输出） | React 步骤条进度可视化 + Markdown 报告渲染 |
