@@ -1,0 +1,41 @@
+[project]
+name = "nio-diagnosis-agent"
+version = "0.1.0"
+description = "蔚来效能平台 AI 诊断 RAG Agent - 基于 LangChain + LangGraph"
+requires-python = ">=3.10"
+dependencies = [
+    "langchain>=0.3.0",
+    "langgraph>=0.2.0",
+    "langchain-deepseek>=0.1.0",
+    "langchain-openai>=0.2.0",
+    "langchain-community>=0.3.0",
+    "langchain-text-splitters>=0.3.0",
+    "faiss-cpu>=1.7.0",
+    "langchain-huggingface>=0.1.0",
+    "sentence-transformers>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "rich>=13.0.0",
+    "pydantic>=2.0.0",
+]
+
+[project.optional-dependencies]
+tongyi = ["langchain-tongyi>=0.1.0"]
+dev = ["pytest>=8.0.0", "pytest-asyncio>=0.23.0"]
+web = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "sse-starlette>=2.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+pythonpath = ["."]

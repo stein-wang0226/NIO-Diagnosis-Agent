@@ -1,0 +1,401 @@
+{
+  "version": "1.0",
+  "description": "蔚来效能平台 - 业务 Schema 与字段校验规则",
+
+  "error_code_mappings": {
+    "BMS_CHG_TIMEOUT_003": {
+      "component": "BMS.ChargingController",
+      "description": "CCS2 充电握手超时",
+      "threshold": "CML_MaxCurrentLimit 响应应 ≤ 5s",
+      "severity": "P1",
+      "related_error_codes": ["BMS_CHG_QUEUE_FULL_001"]
+    },
+    "BMS_CHG_QUEUE_FULL_001": {
+      "component": "BMS.ChargingController",
+      "description": "BMS 消息队列满载",
+      "threshold": "队列使用率应 ≤ 80%",
+      "severity": "P2",
+      "related_error_codes": ["BMS_CHG_TIMEOUT_003"]
+    },
+    "AEB_CONF_LOW_002": {
+      "component": "ADAS.Perception.AEB",
+      "description": "AEB 置信度低于阈值未触发制动",
+      "threshold": "目标置信度应 ≥ 0.85 (当前策略)",
+      "severity": "P0",
+      "related_error_codes": ["CAM_GLARE_001"]
+    },
+    "CAM_GLARE_001": {
+      "component": "ADAS.Perception.Camera",
+      "description": "摄像头眩光检测",
+      "threshold": "饱和度应 ≤ 0.85",
+      "severity": "P2",
+      "related_error_codes": ["AEB_CONF_LOW_002"]
+    },
+    "NOMI_CTX_LOST_004": {
+      "component": "ICM.NOMI.DialogManager",
+      "description": "NOMI 对话上下文丢失",
+      "threshold": "上下文应在 5 轮对话内保持继承",
+      "severity": "P2",
+      "related_error_codes": ["AUDIO_OVERFLOW_001"]
+    },
+    "AUDIO_OVERFLOW_001": {
+      "component": "ICM.Audio.Preprocessor",
+      "description": "音频缓冲区溢出",
+      "threshold": "音频块大小应 ≤ 4KB",
+      "severity": "P2",
+      "related_error_codes": ["NOMI_CTX_LOST_004"]
+    },
+    "BMS_THERMAL_DELAY_005": {
+      "component": "BMS.ThermalManager",
+      "description": "液冷泵启动延迟",
+      "threshold": "温度达标后泵应在 5s 内启动",
+      "severity": "P1",
+      "related_error_codes": ["BMS_THERMAL_QUEUE_001"]
+    },
+    "BMS_THERMAL_QUEUE_001": {
+      "component": "BMS.ThermalManager",
+      "description": "热管理调度器队列满载",
+      "threshold": "队列使用率应 ≤ 75%",
+      "severity": "P2",
+      "related_error_codes": ["BMS_THERMAL_DELAY_005"]
+    },
+    "LKA_OFFSET_006": {
+      "component": "ADAS.Control.LKA",
+      "description": "LKA 居中偏移超限",
+      "threshold": "弯道(R≥200m)偏移量应 ≤ 0.2m",
+      "severity": "P1",
+      "related_error_codes": ["LD_CURVE_LOW_CONF_001"]
+    },
+    "LD_CURVE_LOW_CONF_001": {
+      "component": "ADAS.Perception.LaneDetection",
+      "description": "弯道车道线检测置信度低",
+      "threshold": "置信度应 ≥ 0.80",
+      "severity": "P2",
+      "related_error_codes": ["LKA_OFFSET_006"]
+    },
+    "OTA_RESUME_FAIL_007": {
+      "component": "ICM.OTA.DownloadManager",
+      "description": "OTA 断点续传失败",
+      "threshold": "断点恢复成功率应 = 100%",
+      "severity": "P0",
+      "related_error_codes": ["NET_WEAK_SIGNAL_001"]
+    },
+    "NET_WEAK_SIGNAL_001": {
+      "component": "ICM.OTA.NetworkMonitor",
+      "description": "弱网信号警告",
+      "threshold": "RSSI 应 ≥ -85dBm, 丢包率应 ≤ 5%",
+      "severity": "P2",
+      "related_error_codes": ["OTA_RESUME_FAIL_007"]
+    },
+    "BMS_CELL_IMBALANCE_008": {
+      "component": "BMS.CellBalancer",
+      "description": "电芯电压不均衡",
+      "threshold": "电芯压差应 ≤ 50mV，均衡电流应 ≥ 80mA",
+      "severity": "P1",
+      "related_error_codes": ["BMS_BAL_RESISTOR_001"]
+    },
+    "BMS_BAL_RESISTOR_001": {
+      "component": "BMS.CellBalancer",
+      "description": "均衡电阻老化",
+      "threshold": "均衡电阻阻值应 ≤ 15Ω",
+      "severity": "P2",
+      "related_error_codes": ["BMS_CELL_IMBALANCE_008"]
+    },
+    "ACC_FALSE_BRAKE_009": {
+      "component": "ADAS.Control.ACC",
+      "description": "ACC 误触发紧急制动",
+      "threshold": "前车减速 ≤ 5m/s² 时不应触发 AEB",
+      "severity": "P0",
+      "related_error_codes": []
+    },
+    "HUD_RENDER_DELAY_010": {
+      "component": "ICM.HUD.Renderer",
+      "description": "HUD 渲染延迟",
+      "threshold": "渲染延迟应 ≤ 200ms",
+      "severity": "P1",
+      "related_error_codes": []
+    },
+    "VCU_TORQUE_UNEVEN_011": {
+      "component": "VCU.TorqueManager",
+      "description": "扭矩分配不均",
+      "threshold": "左右轮扭矩差应 ≤ 10Nm",
+      "severity": "P1",
+      "related_error_codes": ["WSP_SLIP_002"]
+    },
+    "WSP_SLIP_002": {
+      "component": "VCU.WheelSpeed",
+      "description": "车轮打滑",
+      "threshold": "滑移率应 ≤ 0.10",
+      "severity": "P2",
+      "related_error_codes": ["VCU_TORQUE_UNEVEN_011"]
+    },
+    "BMS_SOC_DRIFT_012": {
+      "component": "BMS.SOCestimator",
+      "description": "SOC 估算偏差",
+      "threshold": "SOC 显示偏差应 ≤ 5%",
+      "severity": "P1",
+      "related_error_codes": []
+    },
+    "BSD_MISS_013": {
+      "component": "ADAS.Perception.BSD",
+      "description": "盲区检测漏检",
+      "threshold": "检测置信度阈值应 ≥ 0.35",
+      "severity": "P0",
+      "related_error_codes": []
+    },
+    "BT_PAIR_TIMEOUT_014": {
+      "component": "ICM.BT.Stack",
+      "description": "蓝牙配对超时",
+      "threshold": "配对耗时应 ≤ 5s",
+      "severity": "P2",
+      "related_error_codes": []
+    },
+    "REGEN_FLUCTUATE_015": {
+      "component": "VCU.RegenController",
+      "description": "动能回收力度波动",
+      "threshold": "减速度波动应 ≤ ±0.05g",
+      "severity": "P2",
+      "related_error_codes": []
+    },
+    "BMS_INSULATION_LOW_016": {
+      "component": "BMS.InsulationMonitor",
+      "description": "绝缘电阻下降",
+      "threshold": "绝缘电阻应 ≥ 100kΩ",
+      "severity": "P0",
+      "related_error_codes": []
+    },
+    "FCW_LATE_WARN_017": {
+      "component": "ADAS.Perception.FCW",
+      "description": "前向碰撞预警延迟",
+      "threshold": "FCW 报警应在 TTC ≤ 3.5s 时触发",
+      "severity": "P0",
+      "related_error_codes": []
+    },
+    "VCU_VOLT_SAMPLE_018": {
+      "component": "VCU.VoltageSampler",
+      "description": "VCU 电压采样异常",
+      "threshold": "电压采样误差应 ≤ ±2V，CAN 报文丢帧率应 = 0%",
+      "severity": "P1",
+      "related_error_codes": []
+    },
+    "SUSP_LEAK_019": {
+      "component": "Chassis.AirSuspension",
+      "description": "空气悬挂漏气",
+      "threshold": "气压应保持 ≥ 5.3bar，车身高度偏差应 ≤ 5mm",
+      "severity": "P0",
+      "related_error_codes": []
+    },
+    "EPS_OVERHEAT_020": {
+      "component": "Steering.EPS.Motor",
+      "description": "EPS 电机过热",
+      "threshold": "EPS 电机温度应 ≤ 85°C",
+      "severity": "P1",
+      "related_error_codes": []
+    },
+    "HVAC_REFRIG_LEAK_021": {
+      "component": "HVAC.Compressor",
+      "description": "空调冷媒泄漏",
+      "threshold": "冷媒压力应保持 ≥ 8bar",
+      "severity": "P0",
+      "related_error_codes": []
+    }
+  },
+
+  "component_dependencies": {
+    "BMS.ChargingController": {
+      "depends_on": ["BMS.MessageQueue", "BMS.ProtocolStack"],
+      "description": "充电控制器依赖消息队列和协议栈"
+    },
+    "ADAS.Perception.AEB": {
+      "depends_on": ["ADAS.Perception.Camera", "ADAS.Perception.Tracker", "ADAS.Control.LKA"],
+      "description": "AEB 依赖摄像头、目标跟踪器和 LKA 的协同"
+    },
+    "ICM.NOMI.DialogManager": {
+      "depends_on": ["ICM.Audio.Preprocessor", "ICM.NLU.Engine"],
+      "description": "NOMI 对话管理依赖音频预处理和 NLU 引擎"
+    },
+    "BMS.ThermalManager": {
+      "depends_on": ["BMS.TempSensor", "BMS.PumpController", "BMS.FanController"],
+      "description": "热管理依赖温度传感器、泵和风扇控制器"
+    },
+    "ICM.OTA.DownloadManager": {
+      "depends_on": ["ICM.OTA.NetworkMonitor", "ICM.Storage.Flash"],
+      "description": "OTA 下载管理依赖网络监控和 Flash 存储"
+    },
+    "BMS.CellBalancer": {
+      "depends_on": ["BMS.VoltageSensor", "BMS.CellMonitor"],
+      "description": "电芯均衡器依赖电压传感器和电芯监控"
+    },
+    "ADAS.Control.ACC": {
+      "depends_on": ["ADAS.Perception.Camera", "ADAS.Perception.Radar", "ADAS.Control.AEB"],
+      "description": "ACC 依赖摄像头、雷达和 AEB 协同"
+    },
+    "ICM.HUD.Renderer": {
+      "depends_on": ["ICM.Navigation.Engine", "ICM.Display.Driver"],
+      "description": "HUD 渲染器依赖导航引擎和显示驱动"
+    },
+    "VCU.TorqueManager": {
+      "depends_on": ["VCU.WheelSpeed", "VCU.MotorController", "VCU.TractionControl"],
+      "description": "扭矩管理器依赖轮速、电机控制和牵引力控制"
+    },
+    "BMS.SOCestimator": {
+      "depends_on": ["BMS.CoulombCounter", "BMS.VoltageSensor", "BMS.TempSensor"],
+      "description": "SOC 估算器依赖库仑计、电压传感器和温度传感器"
+    },
+    "ADAS.Perception.BSD": {
+      "depends_on": ["ADAS.Perception.RearRadar", "ADAS.Control.LKA"],
+      "description": "盲区检测依赖后角雷达和 LKA 协同"
+    },
+    "ICM.BT.Stack": {
+      "depends_on": ["ICM.BT.Radio", "ICM.Audio.Codec"],
+      "description": "蓝牙协议栈依赖射频模块和音频编解码器"
+    },
+    "VCU.RegenController": {
+      "depends_on": ["VCU.WheelSpeed", "VCU.MotorController", "BMS.SOCestimator"],
+      "description": "动能回收控制器依赖轮速、电机和 SOC 估算"
+    },
+    "BMS.InsulationMonitor": {
+      "depends_on": ["BMS.VoltageSensor", "BMS.SafetyController"],
+      "description": "绝缘监测依赖电压传感器和安全控制器"
+    },
+    "ADAS.Perception.FCW": {
+      "depends_on": ["ADAS.Perception.Camera", "ADAS.Perception.Radar", "ADAS.Control.AEB"],
+      "description": "前向碰撞预警依赖摄像头、雷达和 AEB"
+    }
+  },
+
+  "validation_rules": [
+    {
+      "rule_id": "VR-001",
+      "name": "响应时间阈值校验",
+      "description": "检查系统响应时间是否在业务规定阈值内",
+      "fields": ["duration_ms", "threshold_ms"],
+      "logic": "duration_ms <= threshold_ms",
+      "applies_to": ["BMS_CHG_TIMEOUT_003", "BMS_THERMAL_DELAY_005"]
+    },
+    {
+      "rule_id": "VR-002",
+      "name": "置信度阈值校验",
+      "description": "检查感知模块置信度是否达标",
+      "fields": ["confidence", "threshold"],
+      "logic": "confidence >= threshold",
+      "applies_to": ["AEB_CONF_LOW_002", "LD_CURVE_LOW_CONF_001"]
+    },
+    {
+      "rule_id": "VR-003",
+      "name": "队列使用率校验",
+      "description": "检查消息队列/调度器队列使用率",
+      "fields": ["queue_used", "queue_capacity"],
+      "logic": "queue_used / queue_capacity <= 0.80",
+      "applies_to": ["BMS_CHG_QUEUE_FULL_001", "BMS_THERMAL_QUEUE_001"]
+    },
+    {
+      "rule_id": "VR-004",
+      "name": "上下文完整性校验",
+      "description": "检查多轮对话上下文是否完整继承",
+      "fields": ["context_slots", "expected_slots"],
+      "logic": "all(slot in context_slots for slot in expected_slots)",
+      "applies_to": ["NOMI_CTX_LOST_004"]
+    },
+    {
+      "rule_id": "VR-005",
+      "name": "偏移量阈值校验",
+      "description": "检查控制精度是否在阈值内",
+      "fields": ["offset", "threshold", "curve_radius"],
+      "logic": "curve_radius >= 200 ? offset <= 0.2 : offset <= 0.3",
+      "applies_to": ["LKA_OFFSET_006"]
+    },
+    {
+      "rule_id": "VR-006",
+      "name": "断点完整性校验",
+      "description": "检查 OTA 断点文件完整性",
+      "fields": ["checksum_match", "resume_point"],
+      "logic": "checksum_match == true and resume_point > 0",
+      "applies_to": ["OTA_RESUME_FAIL_007"]
+    },
+    {
+      "rule_id": "VR-007",
+      "name": "电芯压差均衡校验",
+      "description": "检查电芯电压均衡状态",
+      "fields": ["cell_delta_mv", "balance_current_ma"],
+      "logic": "cell_delta_mv <= 50 and balance_current_ma >= 80",
+      "applies_to": ["BMS_CELL_IMBALANCE_008", "BMS_BAL_RESISTOR_001"]
+    },
+    {
+      "rule_id": "VR-008",
+      "name": "减速度阈值分离校验",
+      "description": "检查 ACC 与 AEB 减速度阈值是否重叠",
+      "fields": ["acc_max_decel", "aeb_threshold_decel"],
+      "logic": "acc_max_decel < aeb_threshold_decel",
+      "applies_to": ["ACC_FALSE_BRAKE_009"]
+    },
+    {
+      "rule_id": "VR-009",
+      "name": "渲染延迟校验",
+      "description": "检查 HUD 渲染延迟",
+      "fields": ["render_latency_ms", "threshold_ms"],
+      "logic": "render_latency_ms <= threshold_ms",
+      "applies_to": ["HUD_RENDER_DELAY_010"]
+    },
+    {
+      "rule_id": "VR-010",
+      "name": "扭矩分配均匀性校验",
+      "description": "检查左右轮扭矩差",
+      "fields": ["torque_left_nm", "torque_right_nm"],
+      "logic": "abs(torque_left_nm - torque_right_nm) <= 10",
+      "applies_to": ["VCU_TORQUE_UNEVEN_011"]
+    },
+    {
+      "rule_id": "VR-011",
+      "name": "SOC 估算偏差校验",
+      "description": "检查 SOC 显示与实际偏差",
+      "fields": ["displayed_soc", "actual_soc"],
+      "logic": "abs(displayed_soc - actual_soc) <= 5",
+      "applies_to": ["BMS_SOC_DRIFT_012"]
+    },
+    {
+      "rule_id": "VR-012",
+      "name": "绝缘电阻校验",
+      "description": "检查电池包绝缘电阻",
+      "fields": ["insulation_resistance_kohm", "threshold_kohm"],
+      "logic": "insulation_resistance_kohm >= threshold_kohm",
+      "applies_to": ["BMS_INSULATION_LOW_016"]
+    },
+    {
+      "rule_id": "VR-013",
+      "name": "FCW 预警时效校验",
+      "description": "检查 FCW 报警是否及时",
+      "fields": ["fcw_trigger_ttc_s", "threshold_ttc_s"],
+      "logic": "fcw_trigger_ttc_s >= threshold_ttc_s",
+      "applies_to": ["FCW_LATE_WARN_017"]
+    }
+  ],
+
+  "terminology_glossary": {
+    "BMS": "Battery Management System，电池管理系统",
+    "AEB": "Autonomous Emergency Braking，自动紧急制动",
+    "LKA": "Lane Keeping Assist，车道保持辅助",
+    "VCU": "Vehicle Control Unit，整车控制器",
+    "ICM": "Intelligent Cockpit Module，智能座舱模块",
+    "NOMI": "蔚来智能语音助手",
+    "OTA": "Over-The-Air，空中下载升级",
+    "CCS2": "Combined Charging System 2，组合充电系统标准2型",
+    "SOC": "State of Charge，电池荷电状态",
+    "TTC": "Time To Collision，碰撞剩余时间",
+    "HiL": "Hardware-in-the-Loop，硬件在环测试",
+    "CAN": "Controller Area Network，控制器局域网",
+    "ECU": "Electronic Control Unit，电子控制单元",
+    "PID": "Proportional-Integral-Derivative，比例-积分-微分控制器",
+    "RSSI": "Received Signal Strength Indicator，接收信号强度指示",
+    "ACC": "Adaptive Cruise Control，自适应巡航控制",
+    "BSD": "Blind Spot Detection，盲区检测",
+    "BSM": "Blind Spot Monitoring，盲区监控",
+    "FCW": "Forward Collision Warning，前向碰撞预警",
+    "HUD": "Head-Up Display，抬头显示",
+    "RCS": "Radar Cross Section，雷达截面积",
+    "OCV": "Open Circuit Voltage，开路电压",
+    "SDP": "Service Discovery Protocol，服务发现协议",
+    "SCHED_FIFO": "Linux 实时调度策略，先进先出",
+    "SCHED_OTHER": "Linux 普通调度策略，时间片轮转"
+  }
+}

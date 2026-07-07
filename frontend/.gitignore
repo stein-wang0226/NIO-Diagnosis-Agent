@@ -1,0 +1,5 @@
+node_modules/
+dist/
+src/api/static/
+*.local
+.DS_Store
